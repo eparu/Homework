@@ -12,8 +12,12 @@
 int g(int a);
 
 int main(int argc, const char * argv[]) {
+    g(3);
+
     // insert code here...
+    std::cout << std::endl;
     std::cout << "Hello, World!\n";
+    g(10);
     return 0;
 }
 
