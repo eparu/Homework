@@ -8,12 +8,20 @@
 
 #include <iostream>
 
+<<<<<<< HEAD
 int g(int a);
+=======
+
+>>>>>>> main
 
 
 int main(int argc, const char * argv[]) {
     // insert code here...
+<<<<<<< HEAD
     std::cout << "string\n";
+=======
+    std::cout << "1234\n";
+>>>>>>> main
     std::cout << "Hello, World!\n";
     return 0;
 }
