@@ -19,3 +19,4 @@ int g(int a){
 }
 // Second change in New branch
 // Commit in master
+// Commit in New2 branch
