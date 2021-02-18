@@ -7,7 +7,7 @@
 #include <vector>
 
 #include "Timer.hpp"
-#define SIZE 1000000
+constexpr int SIZE = 1000000;
 
 
 
