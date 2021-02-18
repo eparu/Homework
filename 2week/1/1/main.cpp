@@ -1,5 +1,6 @@
 #include <iostream>
 #include <vector>
+#include <exception>
 //Наблюдения в комментарии внизу
 
 void PrintSizeAndCapacity (std::vector<int> &v)
@@ -32,12 +33,17 @@ int main(int argc, const char * argv[]) {
     PrintSizeAndCapacity(v1);
 
     std::cout << "\nBig vector\n";
-    std::vector<int> BigVector(7000000000);
-    std::cout << "Begin\n";
-    PrintSizeAndCapacity(BigVector);
-    BigVector.push_back(0);
-    std::cout << "One element added\n";
-    PrintSizeAndCapacity(BigVector);
+
+    try {
+        std::vector<int> BigVector(10000000000);
+        std::cout << "Begin\n";
+        PrintSizeAndCapacity(BigVector);
+        BigVector.push_back(0);
+        std::cout << "One element added\n";
+        PrintSizeAndCapacity(BigVector);
+    } catch (const std::exception& ex) {
+        std::cout << "Exception: "<<  ex.what() << std::endl;
+    }
 
     std::cout << "Done!";
     return 0;
