@@ -12,7 +12,6 @@ public:
     Timer(const std::string& timer_name = "Untitled") : m_timer_name(timer_name), is_timer_work(true), m_time(duration_t::zero()), m_begin(clock_t::now()) {};
     ~Timer()
     {
-        is_timer_work = false;
         std::cout << "Delete ";
         Print();
     }
