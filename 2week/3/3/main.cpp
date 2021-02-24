@@ -4,7 +4,7 @@
 #include <iostream>
 #include <vector>
 
-#include <multi_array.hpp>
+#include <boost/multi_array.hpp>
 
 template < auto N, typename Container, typename Forward_Iterator >
 void fill_shape(const Container & container, Forward_Iterator shape)
@@ -20,11 +20,21 @@ void fill_shape(const Container & container, Forward_Iterator shape)
 template < auto N, typename Container, typename Forward_Iterator >
 void fill_multi_array(const Container & container, Forward_Iterator multi_array)
 {
+
+    
+
     // Write your code here ...
 
     // USE: recursive template instantiation of fill_multi_array
     // USE: std::next(multi_array, i)->begin() in recursion
     // USE: if constexpr (N > 1) { ... } else { ... }
+    if constexpr (N > 1)
+    {
+        fill_multi_array< N - 1 >(*(std::begin(container)), std::next(multi_array, 1)->begin()) ;
+    }
+
+
+
 
     // Enjoy debugging!
 }
@@ -34,7 +44,7 @@ auto make_multi_array(const Container & container)
 {
     using multi_array_t = boost::multi_array < T, N > ;
 
-    std::vector < multi_array_t::index > shape(N, multi_array_t::index(0));
+    std::vector <typename multi_array_t::index > shape(N, typename multi_array_t::index(0));
 
     fill_shape < N > (container, std::begin(shape));
 
@@ -51,9 +61,7 @@ int main(int argc, char ** argv)
     const auto size_2 = 4U;
     const auto size_3 = 5U;
 
-    std::vector < std::vector < std::vector < int > > > v(size_1,
-                                                          std::vector < std::vector < int > > (size_2,
-                                                                                               std::vector < int > (size_3, 0)));
+    std::vector < std::vector < std::vector < int > > > v (size_1, std::vector < std::vector < int > > (size_2, std::vector < int > (size_3, 0)));
 
     std::cout << "std::vector < std::vector < std::vector < int > > >\n" << std::endl;
 
@@ -92,8 +100,6 @@ int main(int argc, char ** argv)
 
         std::cout << std::endl;
     }
-
-    system("pause");
 
     return EXIT_SUCCESS;
 }
