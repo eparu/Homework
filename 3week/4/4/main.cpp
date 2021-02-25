@@ -34,13 +34,12 @@ int main(int argc, const char * argv[]) {
         std::set < std::size_t > hash_string;
         unsigned int counter_collisions = 0;
 
-        //std::cout << functions_names[k++] << std::endl;
+        std::cout << functions_names[k++] << std::endl;
 
         for (const auto& i : words)
         {
             auto ans = func(i.c_str(), i.size());
             auto added = hash_string.insert(ans).second;
-            //std::cout << "string ans << std::endl;
             if (!added) counter_collisions++;
         }
        std::cout << counter_collisions << std::endl;
