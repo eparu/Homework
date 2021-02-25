@@ -90,5 +90,22 @@ int main(int argc, char ** argv)
 
         std::cout << "  " << i.name << ' ' << i.phone << std::endl;
     }
+
+    std::cout << "Modify A 1234 -> B 1234:\n";
+    auto iterator_to_modify = customer.equal_range("A");
+    for (auto i = iterator_to_modify.first; i != iterator_to_modify.second; i++)
+    {
+        if (i->phone == 1234)
+        {
+            customer.modify(i, [](Person & p) { p.name = "B"; });
+            break;
+        }
+    }
+    for (const auto & i : tipografie)
+    {
+
+        std::cout << "  " << i.name << ' ' << i.phone << std::endl;
+    }
+
     return 0;
 }
