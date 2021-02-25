@@ -15,7 +15,7 @@ std::size_t hash(const double key)
 {
     auto b = std::bitset <64> (*(unsigned long long*)(&key));
     b = ((b >> 13) ^ (b << 17) ^ (b >> 31) ^ (b << 3));
-    unsigned long long answer = std::bitset < 64 > (b).to_ullong();
+    auto answer = std::bitset < 64 > (b).to_ullong();
     return answer % H;
 }
 
