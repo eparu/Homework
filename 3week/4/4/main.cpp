@@ -8,7 +8,7 @@
 
 #include "make_new_words.hpp"
 
-constexpr std::size_t SIZE = 1000;
+constexpr std::size_t SIZE = 2000000;
 
 unsigned int RSHash(const char* str, unsigned int length);
 unsigned int JSHash(const char* str, unsigned int length);
@@ -28,15 +28,13 @@ int main(int argc, const char * argv[]) {
     std::vector <std::function <unsigned int(const char*, unsigned int )>> f = {&RSHash, &JSHash, &PJWHash, &ELFHash, &BKDRHash, &SDBMHash, &DJBHash, &DEKHash, &APHash};
     std::vector<std::string> functions_names = {"RSHash", "JSHash", "PJWHash", "ELFHash","BKDRHash", "SDBMHash", "DJBHash", "DEKHash", "APHash"};
     int k = 0;
+    std::set < std::string > words = make_random_words(SIZE);
     for (auto func : f)
     {
-
-        std::set < std::string > words = make_random_words(SIZE);
         std::set < std::size_t > hash_string;
         unsigned int counter_collisions = 0;
 
-        std::cout << functions_names[k++] << std::endl;
-
+        //std::cout << functions_names[k++] << std::endl;
 
         for (const auto& i : words)
         {
@@ -45,7 +43,7 @@ int main(int argc, const char * argv[]) {
             //std::cout << "string ans << std::endl;
             if (!added) counter_collisions++;
         }
-        std::cout << counter_collisions << std::endl;
+       std::cout << counter_collisions << std::endl;
     }
     return 0;
 }
