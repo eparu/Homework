@@ -5,9 +5,8 @@
 #include <set>
 #include <string>
 
-#include <boost/functional/hash.hpp>
 
-constexpr std::size_t SIZE = 100000;
+//constexpr std::size_t SIZE = 1000000;
 
 std::set < std::string > make_random_words(std::size_t N, std::size_t length = 10)
 {
@@ -24,35 +23,60 @@ std::set < std::string > make_random_words(std::size_t N, std::size_t length = 1
     return words;
 }
 
+template < typename T >
+void hash_combine(std::size_t& seed, const T& value) noexcept
+{
+    seed ^= std::hash < T >()(value) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+}
+
+template < typename T >
+void hash_value(std::size_t& seed, const T& value) noexcept
+{
+    hash_combine(seed, value);
+}
+
+template < typename T, typename ... Types >
+void hash_value(std::size_t& seed, const T& value, const Types& ... args) noexcept
+{
+    hash_combine(seed, value);
+    hash_value(seed, args...);
+}
+
+template < typename ... Types >
+std::size_t hash_value(const Types& ... args) noexcept
+{
+    std::size_t seed = 0;
+    hash_value(seed, args...);
+    return seed;
+}
+
+
+
 
 int main(int argc, const char * argv[]) {
-    std::set < std::size_t > hash_string;
-    std::set < std::size_t > hash_int;
-    unsigned int counter_collisions_strings = 0;
-    unsigned int counter_collisions_int = 0;
-
-
-    std::set < std::string > strings = make_random_words(SIZE);
-    std::set < int > numbers;
-
-    while (numbers.size() < SIZE)
+    for (std::size_t SIZE = 100000; SIZE <= 1000000; SIZE += 100000)
     {
-        numbers.insert(rand());
-    }
+        std::set < std::size_t > hash;
+        unsigned int counter_collisions = 0;
 
-    for (const auto& i : strings)
-    {
-        auto added = (hash_string.insert(boost::hash_value(i))).second;
-        if (!added) counter_collisions_strings++;
-    }
+        std::set < std::string > strings = make_random_words(SIZE);
+        std::vector < int > numbers(SIZE);
+        for (auto& i :numbers)
+        {
+            i = rand();
+        }
 
-    for (const auto& i : numbers)
-    {
-        auto added = (hash_string.insert(boost::hash_value(i))).second;
-        if (!added) counter_collisions_int++;
-    }
+        auto i = 0U;
+        for (const auto & str : strings)
+        {
+            if (!(hash.insert(hash_value(str, numbers[i++])).second))
+            {
+                counter_collisions++;
+            }
+        }
 
-    std::cout << std::left << std::setw(9) << SIZE << std::setw(5) << counter_collisions_strings << std::setw(5) << counter_collisions_int << std::endl;
+        std::cout << std::left << std::setw(9) << SIZE << std::setw(5) << counter_collisions << std::endl;
+    }
 
     return 0;
 }
