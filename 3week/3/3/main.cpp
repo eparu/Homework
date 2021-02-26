@@ -1,4 +1,5 @@
 #include <chrono>
+#include <iomanip>
 #include <iostream>
 #include <random>
 #include <set>
@@ -6,7 +7,7 @@
 
 #include <boost/functional/hash.hpp>
 
-constexpr std::size_t SIZE = 10;
+constexpr std::size_t SIZE = 100000;
 
 std::set < std::string > make_random_words(std::size_t N, std::size_t length = 10)
 {
@@ -51,10 +52,7 @@ int main(int argc, const char * argv[]) {
         if (!added) counter_collisions_int++;
     }
 
-
-    std::cout << counter_collisions_strings << std::endl;
-
-    std::cout << counter_collisions_int << std::endl;
+    std::cout << std::left << std::setw(9) << SIZE << std::setw(5) << counter_collisions_strings << std::setw(5) << counter_collisions_int << std::endl;
 
     return 0;
 }
