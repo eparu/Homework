@@ -47,11 +47,11 @@ void OutputInFile(const std::string& path_string, const json& j, const std::stri
     }
 }
 
-std::string CreateDirectory(const boost::filesystem::path& path, const std::string& folder_name)
-{
-    boost::filesystem::create_directory(path / folder_name);
-    return path.string() + folder_name;
-}
+//std::string CreateDirectory(const boost::filesystem::path& path, const std::string& folder_name)
+//{
+//    boost::filesystem::create_directory(path / folder_name);
+//    return path.string() + folder_name;
+//}
 
 int main(int argc, const char * argv[]) {
 
@@ -63,9 +63,9 @@ int main(int argc, const char * argv[]) {
     json j2 = convert_to_json(PeopleInMyRoom[1]);
 
 
-    auto path = boost::filesystem::current_path();
-    std::string path_string = CreateDirectory(path, "folder");
-
+   // auto path = boost::filesystem::current_path();
+   // std::string path_string = CreateDirectory(path, "folder");
+    std::string path_string = "/Users/svetlanapelesova/Library/Autosave Information/untitled folder/2курс_ФЭФМ/Homework/6week/4/4/folder";
 
     OutputInFile(path_string, j1, PeopleInMyRoom[0].name + ".txt");
     OutputInFile(path_string, j2, PeopleInMyRoom[1].name + ".txt");
