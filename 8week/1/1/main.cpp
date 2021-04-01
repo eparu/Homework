@@ -1,114 +1,102 @@
-#include <condition_variable>
-#include <memory>
-#include <mutex>
-#include <queue>
+#include <future>
+#include <iostream>
+#include <random>
+#include <thread>
+#include <vector>
 
-template < typename T >
-class Threadsafe_Queue
+
+inline bool in_circle(const double& x, const double& y)
+{
+    return (x*x + y*y < 1);
+}
+
+
+class Threads_Guard
 {
 public:
+    explicit Threads_Guard(std::vector < std::thread > & threads) : m_threads(threads)
+    {}
 
-    Threadsafe_Queue() = default;
+    Threads_Guard(Threads_Guard const&) = delete;
 
-    Threadsafe_Queue(const Threadsafe_Queue & other)
+    Threads_Guard& operator=(Threads_Guard const&) = delete;
+
+    ~Threads_Guard() noexcept
     {
-        std::lock_guard < std::mutex > lock(other.m_mutex);
-        m_queue = other.m_queue;
-    }
-
-    Threadsafe_Queue & operator=(const Threadsafe_Queue & other)
-    {
-        std::scoped_lock lock(m_mutex, other.m_mutex);
-        m_queue = other.m_queue;
-    }
-
-public:
-
-    void push(T value)
-    {
-        std::lock_guard < std::mutex > lock(m_mutex);
-        m_queue.push(value);
-        m_condition_variable.notify_one();
-    }
-
-    void wait_and_pop(T & value)
-    {
-        std::unique_lock < std::mutex > lock(m_mutex);
-
-        m_condition_variable.wait(lock, [this] {return !m_queue.empty(); });
-        value = m_queue.front();
-        m_queue.pop();
-    }
-
-    std::shared_ptr < T > wait_and_pop()
-    {
-        std::unique_lock < std::mutex > lock(m_mutex);
-
-        m_condition_variable.wait(lock, [this] {return !m_queue.empty(); });
-        auto result = std::make_shared < T > (m_queue.front());
-        m_queue.pop();
-
-        return result;
-    }
-
-    bool try_pop(T & value)
-    {
-        std::lock_guard < std::mutex > lock(m_mutex);
-
-        if (m_queue.empty())
+        try
         {
-            return false;
+            for (std::size_t i = 0; i < m_threads.size(); ++i)
+            {
+                if (m_threads[i].joinable())
+                {
+                    m_threads[i].join();
+                }
+            }
         }
-
-        value = m_queue.front();
-        m_queue.pop();
-
-        return true;
-    }
-
-    std::shared_ptr < T > try_pop()
-    {
-        std::lock_guard < std::mutex > lock(m_mutex);
-
-        if (m_queue.empty())
+        catch (...)
         {
-            return std::shared_ptr < T > ();
+            std::cerr << "\nDTOR THREAD ERROR\n";
         }
-
-        auto result = std::make_shared < T > (m_queue.front());
-        m_queue.pop();
-
-        return result;
-    }
-
-    bool empty() const
-    {
-        std::lock_guard < std::mutex > lock(m_mutex);
-        return m_queue.empty();
     }
 
 private:
-
-    std::queue < T >        m_queue;
-    std::condition_variable m_condition_variable;
-
-private:
-
-    mutable std::mutex m_mutex;
+    std::vector < std::thread >& m_threads;
 };
 
-int main(int argc, char ** argv)
+
+struct counter_in_circle
 {
-    Threadsafe_Queue < int > queue;
+    std::size_t operator()(const std::size_t N, std::atomic<std::size_t> &points_in_circle)
+    {
+        std::mt19937_64 gen;
+        std::uniform_real_distribution <> urd(0.0, 1.0);;
+        for (auto i = 0U; i < N; ++i)
+        {
+            if (in_circle(urd(gen), urd(gen)))
+                points_in_circle++;
+        }
+        return points_in_circle++;
+    }
+};
 
-    queue.push(42);
+double parallel_pi(const std::size_t amount_of_points)
+{
+    const std::size_t hardware_threads = std::thread::hardware_concurrency();
+    const std::size_t num_threads =(hardware_threads != 0 ? hardware_threads : 2);
+    const std::size_t block_size = amount_of_points / num_threads;
+    
 
-    auto ptr = queue.wait_and_pop();
+    std::vector < std::future < void > > futures(num_threads - 1);
+    std::vector < std::thread > threads(num_threads - 1);
 
-    int value;
+    Threads_Guard guard(threads);
 
-    bool result = queue.try_pop(value);
+    std::atomic<std::size_t> points_in_circle = 0;
+
+    for (auto i = 0; i < (num_threads - 1); ++i)
+    {
+        std::packaged_task < void(const std::size_t, std::atomic<std::size_t>&) > task{counter_in_circle()};
+
+        futures[i] = task.get_future();
+        threads[i] = std::thread(std::move(task), block_size, std::ref(points_in_circle));
+    }
+
+   counter_in_circle()(amount_of_points - (num_threads - 1) * block_size, points_in_circle);
+
+    for (auto i = 0U; i < (num_threads - 1); ++i)
+    {
+        futures[i].get();
+    }
+
+    return points_in_circle*4.0 / amount_of_points;
+}
 
 
+int main(int argc, const char * argv[]) {
+    constexpr std::size_t N = 10000000;
+    {
+        double PI = parallel_pi(N);
+        std::cout << PI << std::endl;
+    }
     return 0;
 }
