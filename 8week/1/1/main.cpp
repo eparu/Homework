@@ -46,16 +46,17 @@ private:
 
 struct counter_in_circle
 {
-    std::size_t operator()(const std::size_t N, std::atomic<std::size_t> &points_in_circle)
+    void operator()(const std::size_t N, std::atomic<std::size_t> &points_in_circle)
     {
         std::mt19937_64 gen;
-        std::uniform_real_distribution <> urd(0.0, 1.0);;
+        std::uniform_real_distribution <> urd(0.0, 1.0);
+        std::size_t result = 0;
         for (auto i = 0U; i < N; ++i)
         {
             if (in_circle(urd(gen), urd(gen)))
-                points_in_circle++;
+                result++;
         }
-        return points_in_circle++;
+        points_in_circle += result;
     }
 };
 
