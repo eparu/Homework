@@ -49,7 +49,7 @@ struct searchSubstr
         {
             auto it1 = std::begin(substr);
             auto it2 = std::next(begin, index);
-            for (; it1 != std::end(substr) && *it1 == *it2; ++it1, ++it2);
+            for (; it1 != std::end(substr) && *it1 == *it2; it1 = std::next(it1), it2 = std::next(it2));
             if (it1 == std::end(substr))
             {
                 safe_push_back(indices, index, mutex);
