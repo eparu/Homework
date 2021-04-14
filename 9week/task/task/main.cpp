@@ -1,3 +1,5 @@
+#define BOOST_DATE_TIME_NO_LIB
+
 #include <algorithm>
 #include <atomic>
 #include <condition_variable>
@@ -25,7 +27,7 @@ private:
     using vector_allocator_t = boost::interprocess::allocator<string_t, manager_t>;
     using vector_t = boost::interprocess::vector<string_t, vector_allocator_t>;
     using mutex_t = boost::interprocess::interprocess_mutex;
-    using condition_t =boost::interprocess::interprocess_condition;
+    using condition_t = boost::interprocess::interprocess_condition;
     using counter_t = std::atomic < std::size_t > ;
 
 public:
@@ -34,7 +36,7 @@ public:
     {
         m_vector    = m_shared_memory.find_or_construct <vector_t>("messages")(m_shared_memory.get_segment_manager());
         m_mutex     = m_shared_memory.find_or_construct <mutex_t>("mutex_ptr")();
-        m_condition = m_shared_memory.find_or_construct <condition_t>("condition_variable_ptr")();
+        m_condition = m_shared_memory.find_or_construct <condition_t>("condition_variable")();
         m_users     = m_shared_memory.find_or_construct <counter_t>("users")();
         m_messages  = m_shared_memory.find_or_construct <counter_t>("counter")();
 
@@ -53,18 +55,19 @@ public:
 
         write();
 
+        m_exit_flag = true;
+
+        m_condition->notify_all();
+
+        reader.join();
 
         send_message(m_user_name + " left the chat");
-
 
         if (!(--(*m_users)))
         {
             boost::interprocess::shared_memory_object::remove(shared_memory_name.c_str());
-
         }
-        m_condition->notify_all();
 
-        reader.join();
     }
 
 private:
@@ -74,38 +77,38 @@ private:
         show_history();
 
         send_message(m_user_name + " joined the chat");
-        std::cout << m_user_name << "read\n";
+
 
         while (true)
         {
             std::unique_lock lock(*m_mutex);
 
-            m_condition->wait(lock, [this]() { return !m_exit_flag || m_local_messages < m_vector->size(); });
+            m_condition->wait(lock, [this]() { return m_exit_flag || m_local_messages < (*m_messages); });
 
             if (m_exit_flag)
             {
                 break;
             }
-            show_history();
+            std::cout << m_vector->at(m_vector->size()-1) << std::endl;
 
+            m_local_messages++;
         }
     }
 
     void show_history()
     {
-        std::cout << m_user_name << "show_history\n";
 
         std::scoped_lock lock(*m_mutex);
 
         for (const auto & message : *m_vector)
         {
             std::cout << message << std::endl;
+            m_local_messages++;
         }
     }
 
     void send_message(const std::string & message)
     {
-        std::cout << m_user_name << "send_message\n";
 
         std::scoped_lock lock(*m_mutex);
 
@@ -120,16 +123,16 @@ private:
 
     void write()
     {
-        std::cout << m_user_name << "write\n";
+        std::string message;
 
-        std::string m;
-        getline(std::cin, m);
-        while (m != "exit")
+        getline(std::cin, message);
+        while (message != "exit")
         {
-            send_message(m);
-            getline(std::cin, m);
+            send_message(m_user_name + " : " + message);
+            getline(std::cin, message);
         }
         m_exit_flag = true;
+
     }
 
 private:
