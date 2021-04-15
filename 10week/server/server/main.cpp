@@ -1,8 +1,8 @@
 //
 //  main.cpp
-//  task
+//  server
 //
-//  Created by Kate on 14.04.2021.
+//  Created by Kate on 15.04.2021.
 //  Copyright © 2021 Kate. All rights reserved.
 //
 
