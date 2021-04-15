@@ -49,9 +49,7 @@ int main(int argc, char** argv)
     std::string user_name;
     std::getline(std::cin, user_name);
 
-    boost::asio::ip::tcp::endpoint endpoint(boost::asio::ip::address_v4::any(), port);
 
-    boost::asio::io_service io_service;
 
     try
     {
