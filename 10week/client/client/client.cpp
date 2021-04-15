@@ -42,8 +42,9 @@ void write_data(boost::asio::ip::tcp::socket& socket, const std::string& user_na
 
 int main(int argc, char** argv)
 {
-    std::string raw_ip_address = "127.0.0.1";
-    auto port = 3333;
+
+    std::string raw_ip_address = "127.0.0.1";  //IP address of server should be here
+    auto port = 8000;
 
     std::cout << "Enter your name: ";
     std::string user_name;
